@@ -1,0 +1,10 @@
+db/health.db
+*.xml
+__pycache__/
+*.pyc
+.venv/
+export/
+tmp/*
+!tmp/.gitkeep
+.env
+.DS_Store

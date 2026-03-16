@@ -1,0 +1,6 @@
+# No external dependencies required
+# Uses only Python standard library:
+# - xml.etree.ElementTree
+# - sqlite3
+# - argparse
+# - datetime
