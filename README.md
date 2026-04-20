@@ -24,15 +24,16 @@ health-data-hub/
 ### 前提条件
 
 - Python 3.10+
-- pip
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 1. データ投入
 
-iPhoneの「ヘルスケア」→ プロフィール → 「すべてのヘルスケアデータを書き出す」→ MacにAirDrop
+iPhoneの「ヘルスケア」→ プロフィール → 「すべてのヘルスケアデータを書き出す」→ Macに転送（AirDrop、iCloud Drive、メール添付など）
 
 ```bash
 cp ~/Downloads/apple_health_export/export.xml ./tmp/export.xml
@@ -61,7 +62,7 @@ python3 parser/fetch_weather.py --start 2025-07-01 --end 2026-03-16 --lat 35.676
 {
   "mcpServers": {
     "health-data-hub": {
-      "command": "python3",
+      "command": "/absolute/path/to/health-data-hub/.venv/bin/python3",
       "args": ["/absolute/path/to/health-data-hub/mcp_server/server.py"],
       "env": {
         "HEALTH_DB_PATH": "/absolute/path/to/health-data-hub/db/health.db"
