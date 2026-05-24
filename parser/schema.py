@@ -131,6 +131,48 @@ def init_db(db_path=None):
     )
     """)
 
+    # ===== 健診結果（key-value型、機関ごとの項目差を吸収） =====
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS checkup_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        source TEXT NOT NULL,
+        item_name TEXT NOT NULL,
+        value REAL,
+        value_text TEXT,
+        unit TEXT,
+        reference_min REAL,
+        reference_max REAL,
+        grade TEXT,
+        UNIQUE(date, source, item_name)
+    )
+    """)
+
+    # ===== 遺伝子型（生データのみ、解釈は都度PubMedで判断） =====
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS genetic_variants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        gene TEXT,
+        rsid TEXT NOT NULL,
+        genotype TEXT NOT NULL,
+        source TEXT,
+        UNIQUE(rsid, source)
+    )
+    """)
+
+    # ===== 主観スコア（1日数回、気分・エネルギー・集中力） =====
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS subjective_scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        mood INTEGER,
+        energy INTEGER,
+        focus INTEGER,
+        note TEXT,
+        UNIQUE(timestamp)
+    )
+    """)
+
     # ===== インデックス =====
     c.execute("CREATE INDEX IF NOT EXISTS idx_hr_type_start ON health_records(type, start_date)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_hr_start ON health_records(start_date)")
@@ -138,6 +180,9 @@ def init_db(db_path=None):
     c.execute("CREATE INDEX IF NOT EXISTS idx_ss_date ON sleep_sessions(sleep_date)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stages_date ON sleep_stages(sleep_date)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_as_date ON activity_summaries(date)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_checkup_date ON checkup_results(date)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_checkup_item ON checkup_results(item_name)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_subjective_ts ON subjective_scores(timestamp)")
 
     conn.commit()
     conn.close()
