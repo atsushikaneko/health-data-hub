@@ -8,3 +8,5 @@ tmp/*
 !tmp/.gitkeep
 .env
 .DS_Store
+db/*.db-shm
+db/*.db-wal

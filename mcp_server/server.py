@@ -56,6 +56,9 @@ def query_health(sql: str) -> str:
     - sleep_stages (sleep_date, stage, start_date, end_date, duration_minutes)
     - workouts (workout_type, start_date, end_date, duration_minutes, total_energy_burned, total_distance)
     - activity_summaries (date, active_energy_burned, active_energy_burned_goal, exercise_time, exercise_time_goal, stand_hours, stand_hours_goal)
+    - checkup_results (date, source, item_name, value, value_text, unit, reference_min, reference_max, grade)
+    - genetic_variants (gene, rsid, genotype, source)
+    - subjective_scores (timestamp, mood, energy, focus, note)
 
     主なレコードtype:
     - HKQuantityTypeIdentifierStepCount (歩数)
@@ -388,6 +391,39 @@ def get_health_and_weather(start_date: str, end_date: str) -> str:
         result.append(d)
 
     return json.dumps(result, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+def get_checkup_history(item_name: str = None) -> str:
+    """
+    健診結果の履歴を取得する。
+    item_nameを指定すると特定項目の推移、省略すると直近の全項目を返す。
+    例: get_checkup_history("LDL") → LDLの年次推移
+    """
+    conn = get_db()
+    if item_name:
+        rows = conn.execute("""
+            SELECT date, source, item_name, value, value_text, unit,
+                   reference_min, reference_max, grade
+            FROM checkup_results
+            WHERE item_name LIKE ?
+            ORDER BY date
+        """, (f"%{item_name}%",)).fetchall()
+    else:
+        latest_date = conn.execute(
+            "SELECT MAX(date) as d FROM checkup_results"
+        ).fetchone()["d"]
+        rows = conn.execute("""
+            SELECT date, source, item_name, value, value_text, unit,
+                   reference_min, reference_max, grade
+            FROM checkup_results
+            WHERE date = ?
+            ORDER BY item_name
+        """, (latest_date,)).fetchall()
+    conn.close()
+    if not rows:
+        return "No checkup data found."
+    return json.dumps([dict(r) for r in rows], ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
